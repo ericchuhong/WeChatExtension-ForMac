@@ -666,11 +666,18 @@
     YMAutoReplyModel *model = nil;
     model = autoReplyModels[0];
     
+    AccountService *accountService = [[objc_getClass("MMServiceCenter") defaultCenter] getService:objc_getClass("AccountService")];
+    
+    
+    
     [model.specificContacts enumerateObjectsUsingBlock:^(NSString *wxid, NSUInteger idx, BOOL * _Nonnull stop) {
         if ([wxid isEqualToString:addMsg.fromUserName.string]) {
             
             NSString *content = @"";
             NSString *session = @"";
+            
+            
+            
             if ([wxid containsString:@"@chatroom"]) {
                 NSArray *contents = [addMsg.content.string componentsSeparatedByString:@":\n"];
                 NSArray *sessions = [wxid componentsSeparatedByString:@"@"];
@@ -680,6 +687,14 @@
                 if (sessions.count > 1) {
                     session = sessions[0];
                 }
+                
+                NSString *atMine = [NSString stringWithFormat:@"@%@", [accountService GetLastLoginUserName]];
+                if (![contents containsObject:atMine]) {
+                    return;
+                } else {
+                    content = [content componentsSeparatedByString:atMine].lastObject;
+                }
+                
             } else {
                 content = addMsg.content.string;
                 session = wxid;
